@@ -35,21 +35,7 @@ local function map_sorted(t, func)
 end
 
 local function indent(n, s)
-  local prefix
-  if type(n) == 'number' then
-    if n <= 0 then
-      return s
-    end
-    prefix = string.rep(' ', n)
-  else
-    assert(type(n) == 'string', 'n must be number or string')
-    prefix = n
-  end
-  local lines = vim.split(s, '\n')
-  for i, line in ipairs(lines) do
-    lines[i] = prefix .. line
-  end
-  return table.concat(lines, '\n')
+  return vim.text.indent(n, s)
 end
 
 local function make_parts(fns)
@@ -145,7 +131,7 @@ local function make_lsp_sections()
             map_sorted(template_def.default_config, function(k, v)
               if type(v) == 'boolean' then
                 return ('- `%s` : `%s`'):format(k, v)
-              elseif type(v) ~= 'function' then
+              elseif type(v) ~= 'function' and k ~= 'root_dir' then
                 return ('- `%s` :\n  ```lua\n%s\n  ```'):format(k, indent(2, inspect(v)))
               end
 

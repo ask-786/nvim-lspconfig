@@ -8,6 +8,7 @@ Nvim by running `:help lspconfig-all`.
 - [ada_ls](#ada_ls)
 - [agda_ls](#agda_ls)
 - [aiken](#aiken)
+- [air](#air)
 - [alloy_ls](#alloy_ls)
 - [anakin_language_server](#anakin_language_server)
 - [angularls](#angularls)
@@ -86,6 +87,7 @@ Nvim by running `:help lspconfig-all`.
 - [dprint](#dprint)
 - [drools_lsp](#drools_lsp)
 - [ds_pinyin_lsp](#ds_pinyin_lsp)
+- [dts_lsp](#dts_lsp)
 - [earthlyls](#earthlyls)
 - [ecsact](#ecsact)
 - [efm](#efm)
@@ -302,6 +304,7 @@ Nvim by running `:help lspconfig-all`.
 - [svls](#svls)
 - [swift_mesonls](#swift_mesonls)
 - [syntax_tree](#syntax_tree)
+- [systemd_ls](#systemd_ls)
 - [tabby_ml](#tabby_ml)
 - [tailwindcss](#tailwindcss)
 - [taplo](#taplo)
@@ -321,6 +324,7 @@ Nvim by running `:help lspconfig-all`.
 - [ts_query_ls](#ts_query_ls)
 - [tsp_server](#tsp_server)
 - [ttags](#ttags)
+- [turbo_ls](#turbo_ls)
 - [turtle_ls](#turtle_ls)
 - [tvm_ffi_navigator](#tvm_ffi_navigator)
 - [twiggy_language_server](#twiggy_language_server)
@@ -348,6 +352,7 @@ Nvim by running `:help lspconfig-all`.
 - [vscoqtop](#vscoqtop)
 - [vtsls](#vtsls)
 - [vuels](#vuels)
+- [wasm_language_tools](#wasm_language_tools)
 - [wgsl_analyzer](#wgsl_analyzer)
 - [yamlls](#yamlls)
 - [yang_lsp](#yang_lsp)
@@ -441,6 +446,32 @@ Default config:
   { "aiken" }
   ```
 - `root_dir` source (use "gF" to visit): [../lua/lspconfig/configs/aiken.lua:4](../lua/lspconfig/configs/aiken.lua#L4)
+
+
+## air
+
+https://github.com/posit-dev/air
+
+Air is an R formatter and language server, written in Rust.
+
+Refer to the [documentation](https://posit-dev.github.io/air/editors.html) for more details.
+
+Snippet to enable the language server:
+```lua
+require'lspconfig'.air.setup{}
+```
+
+Default config:
+- `cmd` :
+  ```lua
+  { "air", "language-server" }
+  ```
+- `filetypes` :
+  ```lua
+  { "r" }
+  ```
+- `root_dir` source (use "gF" to visit): [../lua/lspconfig/configs/air.lua:2](../lua/lspconfig/configs/air.lua#L2)
+- `single_file_support` : `true`
 
 
 ## alloy_ls
@@ -550,13 +581,13 @@ require'lspconfig'.angularls.setup{}
 Default config:
 - `cmd` :
   ```lua
-  { "ngserver", "--stdio", "--tsProbeLocations", "", "--ngProbeLocations", "" }
+  { "ngserver", "--stdio", "--tsProbeLocations", "", "--ngProbeLocations", "", "--angularCoreVersion", "" }
   ```
 - `filetypes` :
   ```lua
   { "typescript", "html", "typescriptreact", "typescript.tsx", "htmlangular" }
   ```
-- `root_dir` source (use "gF" to visit): [../lua/lspconfig/configs/angularls.lua:15](../lua/lspconfig/configs/angularls.lua#L15)
+- `root_dir` source (use "gF" to visit): [../lua/lspconfig/configs/angularls.lua:41](../lua/lspconfig/configs/angularls.lua#L41)
 
 
 ## ansiblels
@@ -892,6 +923,20 @@ vim.filetype.add({
 })
 ```
 
+Optionally, tell treesitter to treat Atlas filetypes as HCL for better syntax highlighting:
+
+```lua
+vim.treesitter.language.register('hcl', 'atlas-config')
+vim.treesitter.language.register('hcl', 'atlas-schema-mysql')
+vim.treesitter.language.register('hcl', 'atlas-schema-postgresql')
+vim.treesitter.language.register('hcl', 'atlas-schema-sqlite')
+vim.treesitter.language.register('hcl', 'atlas-schema-clickhouse')
+vim.treesitter.language.register('hcl', 'atlas-schema-mssql')
+vim.treesitter.language.register('hcl', 'atlas-schema-redshift')
+vim.treesitter.language.register('hcl', 'atlas-test')
+vim.treesitter.language.register('hcl', 'atlas-plan')
+```
+
 Snippet to enable the language server:
 ```lua
 require'lspconfig'.atlas.setup{}
@@ -1091,21 +1136,34 @@ It offers textDocument/diagnostic and workspace/diagnostic capabilities for Rust
 workspaces using the Bacon export locations file.
 
 It requires `bacon` and `bacon-ls` to be installed on the system using
-[mason.nvim](https://github.com/williamboman/mason.nvim) or manually:util
+[mason.nvim](https://github.com/williamboman/mason.nvim) or manually
 
 ```sh
 $ cargo install --locked bacon bacon-ls
 ```
 
-Settings can be changed using the `settings` dictionary:util
+Settings can be changed using the `init_options` dictionary:util
 
 ```lua
-settings = {
-    -- Bacon export filename, default .bacon-locations
+init_options = {
+    -- Bacon export filename (default: .bacon-locations).
     locationsFile = ".bacon-locations",
-    -- Maximum time in seconds the LSP server waits for Bacon to update the
-    -- export file before loading the new diagnostics
-    waitTimeSeconds = 10
+    -- Try to update diagnostics every time the file is saved (default: true).
+    updateOnSave = true,
+    --  How many milliseconds to wait before updating diagnostics after a save (default: 1000).
+    updateOnSaveWaitMillis = 1000,
+    -- Try to update diagnostics every time the file changes (default: true).
+    updateOnChange = true,
+    -- Try to validate that bacon preferences are setup correctly to work with bacon-ls (default: true).
+    validateBaconPreferences = true,
+    -- f no bacon preferences file is found, create a new preferences file with the bacon-ls job definition (default: true).
+    createBaconPreferencesFile = true,
+    -- Run bacon in background for the bacon-ls job (default: true)
+    runBaconInBackground = true,
+    -- Command line arguments to pass to bacon running in background (default "--headless -j bacon-ls")
+    runBaconInBackgroundCommandArguments = "--headless -j bacon-ls",
+    -- How many milliseconds to wait between background diagnostics check to synchronize all open files (default: 2000).
+    synchronizeAllOpenFilesWaitMillis = 2000,
 }
 ```
 
@@ -1123,11 +1181,11 @@ Default config:
   ```lua
   { "rust" }
   ```
-- `root_dir` source (use "gF" to visit): [../lua/lspconfig/configs/bacon_ls.lua:4](../lua/lspconfig/configs/bacon_ls.lua#L4)
-- `settings` :
+- `init_options` :
   ```lua
   {}
   ```
+- `root_dir` source (use "gF" to visit): [../lua/lspconfig/configs/bacon_ls.lua:4](../lua/lspconfig/configs/bacon_ls.lua#L4)
 - `single_file_support` : `true`
 
 
@@ -1295,7 +1353,7 @@ require'lspconfig'.bazelrc_lsp.setup{}
 Default config:
 - `cmd` :
   ```lua
-  { "bazelrc-lsp" }
+  { "bazelrc-lsp", "lsp" }
   ```
 - `filetypes` :
   ```lua
@@ -3135,6 +3193,45 @@ Default config:
 - `single_file_support` : `true`
 
 
+## dts_lsp
+
+`dts-lsp` is an LSP for Devicetree files built on top of tree-sitter-devicetree grammar.
+Language servers can be used in many editors, such as Visual Studio Code, Emacs
+or Vim
+
+Install `dts-lsp` from https://github.com/igor-prusov/dts-lsp and add it to path
+
+`dts-lsp` doesn't require any configuration.
+
+More about Devicetree:
+https://www.devicetree.org/
+https://docs.zephyrproject.org/latest/build/dts/index.html
+
+Snippet to enable the language server:
+```lua
+require'lspconfig'.dts_lsp.setup{}
+```
+
+Default config:
+- `cmd` :
+  ```lua
+  { "dts-lsp" }
+  ```
+- `filetypes` :
+  ```lua
+  { "dts", "dtsi", "overlay" }
+  ```
+- `name` :
+  ```lua
+  "dts_lsp"
+  ```
+- `root_dir` source (use "gF" to visit): [../lua/lspconfig/configs/dts_lsp.lua:2](../lua/lspconfig/configs/dts_lsp.lua#L2)
+- `settings` :
+  ```lua
+  {}
+  ```
+
+
 ## earthlyls
 
 https://github.com/glehmann/earthlyls
@@ -4288,9 +4385,8 @@ Default config:
 https://github.com/gleam-lang/gleam
 
 A language server for Gleam Programming Language.
-[Installation](https://gleam.run/getting-started/installing/)
 
-It can be i
+It comes with the Gleam compiler, for installation see: [Installing Gleam](https://gleam.run/getting-started/installing/)
 
 Snippet to enable the language server:
 ```lua
@@ -4653,13 +4749,13 @@ Default config:
 
 ## harper_ls
 
-https://github.com/elijah-potter/harper
+https://github.com/automattic/harper
 
 The language server for Harper, the slim, clean language checker for developers.
 
-See [docs](https://github.com/elijah-potter/harper/blob/master/harper-ls/README.md#configuration) for more information on settings.
+See our [documentation](https://writewithharper.com/docs/integrations/neovim) for more information on settings.
 
-In short, however, they should look something like this:
+In short, they should look something like this:
 ```lua
 lspconfig.harper_ls.setup {
   settings = {
@@ -4682,7 +4778,7 @@ Default config:
   ```
 - `filetypes` :
   ```lua
-  { "c", "cpp", "cs", "gitcommit", "go", "html", "java", "javascript", "lua", "markdown", "nix", "python", "ruby", "rust", "swift", "toml", "typescript", "typescriptreact", "haskell", "cmake", "typst" }
+  { "c", "cpp", "cs", "gitcommit", "go", "html", "java", "javascript", "lua", "markdown", "nix", "python", "ruby", "rust", "swift", "toml", "typescript", "typescriptreact", "haskell", "cmake", "typst", "php", "dart" }
   ```
 - `root_dir` source (use "gF" to visit): [../lua/lspconfig/configs/harper_ls.lua:2](../lua/lspconfig/configs/harper_ls.lua#L2)
 - `single_file_support` : `true`
@@ -5957,7 +6053,7 @@ require'lspconfig'.lua_ls.setup {
   on_init = function(client)
     if client.workspace_folders then
       local path = client.workspace_folders[1].name
-      if vim.loop.fs_stat(path..'/.luarc.json') or vim.loop.fs_stat(path..'/.luarc.jsonc') then
+      if path ~= vim.fn.stdpath('config') and (vim.loop.fs_stat(path..'/.luarc.json') or vim.loop.fs_stat(path..'/.luarc.jsonc')) then
         return
       end
     end
@@ -6010,7 +6106,7 @@ Default config:
   ```lua
   2
   ```
-- `root_dir` source (use "gF" to visit): [../lua/lspconfig/configs/lua_ls.lua:14](../lua/lspconfig/configs/lua_ls.lua#L14)
+- `root_dir` source (use "gF" to visit): [../lua/lspconfig/configs/lua_ls.lua:15](../lua/lspconfig/configs/lua_ls.lua#L15)
 - `single_file_support` : `true`
 
 
@@ -7423,6 +7519,14 @@ Default config:
   ```lua
   { "oxc_language_server" }
   ```
+- `commands` :
+  ```lua
+  {
+    OxcFixAll = { <function 1>,
+      description = "Apply fixes to current buffer using oxlint (--fix)"
+    }
+  }
+  ```
 - `filetypes` :
   ```lua
   { "astro", "javascript", "javascriptreact", "svelte", "typescript", "typescript.tsx", "typescriptreact", "vue" }
@@ -7822,7 +7926,7 @@ require'lspconfig'.postgres_lsp.setup{}
 Default config:
 - `cmd` :
   ```lua
-  { "postgres_lsp" }
+  { "postgres_lsp", "lsp-proxy" }
   ```
 - `filetypes` :
   ```lua
@@ -8362,7 +8466,7 @@ Default config:
   ```
 - `filetypes` :
   ```lua
-  { "r", "rmd" }
+  { "r", "rmd", "quarto" }
   ```
 - `log_level` :
   ```lua
@@ -9062,7 +9166,7 @@ https://github.com/rust-lang/rust-analyzer
 rust-analyzer (aka rls 2.0), a language server for Rust
 
 
-See [docs](https://github.com/rust-lang/rust-analyzer/blob/master/docs/user/generated_config.adoc) for extra settings. The settings can be used like this:
+See [docs](https://rust-analyzer.github.io/book/configuration.html) for extra settings. The settings can be used like this:
 ```lua
 require'lspconfig'.rust_analyzer.setup{
   settings = {
@@ -9813,6 +9917,17 @@ require'lspconfig'.sourcekit.setup{}
 ```
 
 Default config:
+- `capabilities` :
+  ```lua
+  {
+    textDocument = {
+      diagnostic = {
+        dynamicRegistration = true,
+        relatedDocumentSupport = true
+      }
+    }
+  }
+  ```
 - `cmd` :
   ```lua
   { "sourcekit-lsp" }
@@ -10421,6 +10536,35 @@ Default config:
   { "ruby" }
   ```
 - `root_dir` source (use "gF" to visit): [../lua/lspconfig/configs/syntax_tree.lua:4](../lua/lspconfig/configs/syntax_tree.lua#L4)
+
+
+## systemd_ls
+
+https://github.com/psacawa/systemd-language-server
+
+`systemd-language-server` can be installed via `pip`:
+```sh
+pip install systemd-language-server
+```
+
+Language Server for Systemd unit files
+
+Snippet to enable the language server:
+```lua
+require'lspconfig'.systemd_ls.setup{}
+```
+
+Default config:
+- `cmd` :
+  ```lua
+  { "systemd-language-server" }
+  ```
+- `filetypes` :
+  ```lua
+  { "systemd" }
+  ```
+- `root_dir` source (use "gF" to visit): [../lua/lspconfig/configs/systemd_ls.lua:2](../lua/lspconfig/configs/systemd_ls.lua#L2)
+- `single_file_support` : `true`
 
 
 ## tabby_ml
@@ -11161,6 +11305,39 @@ Default config:
 - `root_dir` source (use "gF" to visit): [../lua/lspconfig/configs/ttags.lua:4](../lua/lspconfig/configs/ttags.lua#L4)
 
 
+## turbo_ls
+
+https://www.npmjs.com/package/turbo-language-server
+
+`turbo-language-server` can be installed via `npm`:
+
+```sh
+npm install -g turbo-language-server
+```
+
+or via `yarn`:
+
+```sh
+yarn global add turbo-language-server
+```
+
+Snippet to enable the language server:
+```lua
+require'lspconfig'.turbo_ls.setup{}
+```
+
+Default config:
+- `cmd` :
+  ```lua
+  { "turbo-language-server", "--stdio" }
+  ```
+- `filetypes` :
+  ```lua
+  { "html", "ruby", "eruby", "blade", "php" }
+  ```
+- `root_dir` source (use "gF" to visit): [../lua/lspconfig/configs/turbo_ls.lua:2](../lua/lspconfig/configs/turbo_ls.lua#L2)
+
+
 ## turtle_ls
 
 https://github.com/stardog-union/stardog-language-servers/tree/master/packages/turtle-language-server
@@ -11658,10 +11835,15 @@ A SystemVerilog LanguageServer.
 
 Download the latest release for your OS from the releases page
 
-# install with slang feature, if C++17 compiler is available
+Install with slang feature, if C++17 compiler is available:
+```
 cargo install --git https://github.com/vivekmalneedi/veridian.git --all-features
-# install if C++17 compiler is not available
+```
+
+Install if C++17 compiler is not available:
+```
 cargo install --git https://github.com/vivekmalneedi/veridian.git
+```
 
 Snippet to enable the language server:
 ```lua
@@ -12092,6 +12274,30 @@ Default config:
   }
   ```
 - `root_dir` source (use "gF" to visit): [../lua/lspconfig/configs/vuels.lua:4](../lua/lspconfig/configs/vuels.lua#L4)
+
+
+## wasm_language_tools
+
+https://github.com/g-plane/wasm-language-tools
+
+WebAssembly Language Tools aims to provide and improve the editing experience of WebAssembly Text Format.
+It also provides an out-of-the-box formatter (a.k.a. pretty printer) for WebAssembly Text Format.
+
+Snippet to enable the language server:
+```lua
+require'lspconfig'.wasm_language_tools.setup{}
+```
+
+Default config:
+- `cmd` :
+  ```lua
+  { "wat_server" }
+  ```
+- `filetypes` :
+  ```lua
+  { "wat" }
+  ```
+- `single_file_support` : `true`
 
 
 ## wgsl_analyzer
